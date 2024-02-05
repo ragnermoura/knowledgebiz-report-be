@@ -16,13 +16,14 @@ const Vacation = conn.define(
         date_start: {
             type: Sequelize.STRING,
             allowNull: true,
+            unique: true
         },
         date_end: {
             type: Sequelize.STRING,
             allowNull: false,
         },
-        color: {
-            type: Sequelize.STRING,
+        status: {
+            type: Sequelize.INTEGER,
             allowNull: true,
         },
         birthday: {

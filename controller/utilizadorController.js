@@ -51,7 +51,27 @@ const atualizarDadosUsuario = async (req, res, next) => {
     usuario.zipcode = req.body.zipcode;
     usuario.country = req.body.country;
     usuario.language = req.body.language;
-    
+
+    await usuario.save();
+    return res
+      .status(201)
+      .send({ mensagem: "Dados de usuário alterados com sucesso!" });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+const atualizarPass = async (req, res, next) => {
+  try {
+    const usuario = await User.findByPk(req.body.id_user);
+    if (!usuario) {
+      return res.status(404).send({ message: "Usuário não encontrado" });
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+
+    usuario.senha = hashedPassword;
+
+
     await usuario.save();
     return res
       .status(201)
@@ -85,18 +105,29 @@ const cadastrarUsuario = async (req, res, next) => {
         });
     }
     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+
+    const gerarCorHexAleatoria = () => {
+      let corHex;
+      do {
+        corHex = '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16);
+      } while (corHex === '#FFFFFF');
+      return corHex;
+    };
+
+
     const novoUsuario = await User.create({
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       email: req.body.email,
       senha: hashedPassword,
-      position:req.body.position,
-      phonenumber:req.body.phonenumber,
-      address:req.body.address,
-      zipcode:req.body.zipcode,
-      country:req.body.country,
-      language:req.body.language,
-      birthday:req.body.birthday,
+      color: gerarCorHexAleatoria(),
+      position: req.body.position,
+      phonenumber: req.body.phonenumber,
+      address: req.body.address,
+      zipcode: req.body.zipcode,
+      country: req.body.country,
+      language: req.body.language,
+      birthday: req.body.birthday,
       id_status: req.body.status,
       id_nivel: req.body.nivel,
 
@@ -122,7 +153,6 @@ const cadastrarUsuario = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
-
 const uploadImage = async (req, res) => {
 
   const { id_user } = req.params
@@ -137,8 +167,8 @@ const uploadImage = async (req, res) => {
 
     await User.update(update, {
       where: {
-      id_user
-    }
+        id_user
+      }
     }
     )
 
@@ -146,9 +176,9 @@ const uploadImage = async (req, res) => {
       success: true,
       mensagem: 'Imagem cadastrada com sucesso!',
     });
-    
+
   } catch (error) {
-    console.log( error )
+    console.log(error)
     res.status(500).json({
       success: false,
       message: 'Ocorreu um erro'
@@ -157,28 +187,28 @@ const uploadImage = async (req, res) => {
 }
 const getImage = async (req, res) => {
 
-try {
+  try {
 
-  const { id_user } = req.params
+    const { id_user } = req.params
 
-  const image = await User.findOne({
-    where: {id_user},
-    attributes:['avatar']
-  })
+    const image = await User.findOne({
+      where: { id_user },
+      attributes: ['avatar']
+    })
 
-  res.status(200).json({
-    success: true,
-    message: 'Sucesso',
-    image
-  })
-  
-} catch (error) {
-  console.log( error )
-  res.status(500).json({
-    success: false,
-    message: 'Ocorreu um erro'
-  })
-}
+    res.status(200).json({
+      success: true,
+      message: 'Sucesso',
+      image
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success: false,
+      message: 'Ocorreu um erro'
+    })
+  }
 
 }
 
@@ -190,5 +220,6 @@ module.exports = {
   cadastrarUsuario,
   getImage,
   uploadImage,
-  atualizarDadosUsuario
+  atualizarDadosUsuario,
+  atualizarPass
 };

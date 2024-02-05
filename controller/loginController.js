@@ -25,7 +25,7 @@ const autenticarUsuario = async (req, res, next) => {
           lastname: user.lastname,
           email: user.email,
           username: user.username,
-          senha: user.senha,
+          color: user.color,
           education: user.education,
           phonenumber: user.phonenumber,
           address: user.address,

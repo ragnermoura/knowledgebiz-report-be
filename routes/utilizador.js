@@ -7,6 +7,7 @@ router.get("/", userController.obterUsuarios);
 router.get("/:id_user", userController.obterUsuarioPorId);
 router.patch("/edit", userController.atualizarUsuario);
 router.patch("/dados", userController.atualizarDadosUsuario);
+router.patch("/edit/pass", userController.atualizarPass);
 router.delete("/delete", userController.excluirUsuario);
 router.post("/cadastro", userController.cadastrarUsuario);
 router.patch("/upload-user-image/:id_user", imageUpload.single('avatar') ,userController.uploadImage);

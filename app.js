@@ -14,6 +14,8 @@ const rotaProjectsUser = require('./routes/projectUser');
 const rotaNivel = require('./routes/nivel');
 const rotaStatus = require('./routes/status');
 const rotaActivies = require('./routes/activities');
+const rotaVacation = require('./routes/vacation');
+const rotaStack = require('./routes/stacks');
 
 
 app.use(morgan('dev'));
@@ -44,6 +46,9 @@ app.use('/nivel', rotaNivel);
 app.use('/status', rotaStatus);
 app.use('/project-user', rotaProjectsUser);
 app.use('/atividade', rotaActivies);
+app.use('/atividade', rotaActivies);
+app.use('/stacks', rotaStack);
+app.use('/vacation', rotaVacation);
 
 
 app.get('/api/test', (req,res) => {

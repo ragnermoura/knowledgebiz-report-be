@@ -2,11 +2,22 @@ const Stack = require('../models/tb_stacks');
 const User = require('../models/tb_utilizadores');
 
 const criarStack = async (req, res, next) => {
+  const { id_user, stackname } = req.body.userData;
+
+  console.log(req.body.userData)
+
   try {
-    const novaStack = await Stack.create(req.body);
-    return res.status(201).send({ response: novaStack });
+    for (const stack of stackname) {
+      await Stack.create({
+        id_user,
+        stackname: stack
+      });
+    }
+
+    return res.status(201).send({ message: "Stacks cadastradas com sucesso para o usuário." });
   } catch (error) {
-    return res.status(500).send({ error: error.message });
+    console.error("Erro ao criar stacks para o usuário:", error);
+    return res.status(500).send({ error: "Erro interno do servidor" });
   }
 };
 
@@ -21,16 +32,22 @@ const obterStacks = async (req, res, next) => {
 
 const obterStackPorId = async (req, res, next) => {
   try {
-    const stack = await Stack.findByPk(req.params.id_stack);
-    if (stack) {
-      return res.status(200).send({ response: stack });
+    const stacks = await Stack.findAll({
+      where: {
+        id_user: req.params.id_user 
+      }
+    });
+
+    if (stacks && stacks.length > 0) {
+      return res.status(200).send({ response: stacks });
     } else {
-      return res.status(404).send({ message: 'Stack não encontrado' });
+      return res.status(404).send({ message: "Stacks não encontradas para o usuário" });
     }
   } catch (error) {
     return res.status(500).send({ error: error.message });
   }
 };
+
 
 const atualizarStack = async (req, res, next) => {
   try {
