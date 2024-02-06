@@ -1,5 +1,8 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/tb_utilizadores");
+const path = require('path');
+const fs = require("fs").promises; // Usando promises para facilitar o uso assíncrono
+const nodemailer = require("nodemailer");
 
 const obterUsuarios = async (req, res, next) => {
   try {
@@ -71,7 +74,6 @@ const atualizarPass = async (req, res, next) => {
 
     usuario.senha = hashedPassword;
 
-
     await usuario.save();
     return res
       .status(201)
@@ -98,22 +100,19 @@ const cadastrarUsuario = async (req, res, next) => {
       where: { email: req.body.email },
     });
     if (usuarioExistente) {
-      return res
-        .status(409)
-        .send({
-          mensagem: "Email já cadastrado, por favor insira um email diferente!",
-        });
+      return res.status(409).send({
+        mensagem: "Email já cadastrado, por favor insira um email diferente!",
+      });
     }
     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
 
     const gerarCorHexAleatoria = () => {
       let corHex;
       do {
-        corHex = '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16);
-      } while (corHex === '#FFFFFF');
+        corHex = "#" + Math.floor(Math.random() * 0xffffff).toString(16);
+      } while (corHex === "#FFFFFF");
       return corHex;
     };
-
 
     const novoUsuario = await User.create({
       firstname: req.body.firstname,
@@ -128,10 +127,9 @@ const cadastrarUsuario = async (req, res, next) => {
       country: req.body.country,
       language: req.body.language,
       birthday: req.body.birthday,
+      sexo: req.body.sexo,
       id_status: req.body.status,
       id_nivel: req.body.nivel,
-
-
     });
     const response = {
       mensagem: "Usuário cadastrado com sucesso",
@@ -154,63 +152,111 @@ const cadastrarUsuario = async (req, res, next) => {
   }
 };
 const uploadImage = async (req, res) => {
+  const { id_user } = req.params;
 
-  const { id_user } = req.params
-
-  const { filename } = req.file
+  const { filename } = req.file;
 
   const update = {
-    avatar: `/avatar/${filename}`
-  }
+    avatar: `/avatar/${filename}`,
+  };
 
   try {
-
     await User.update(update, {
       where: {
-        id_user
-      }
-    }
-    )
+        id_user,
+      },
+    });
 
     return res.status(201).json({
       success: true,
-      mensagem: 'Imagem cadastrada com sucesso!',
+      mensagem: "Imagem cadastrada com sucesso!",
     });
-
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({
       success: false,
-      message: 'Ocorreu um erro'
-    })
+      message: "Ocorreu um erro",
+    });
   }
-}
+};
 const getImage = async (req, res) => {
-
   try {
-
-    const { id_user } = req.params
+    const { id_user } = req.params;
 
     const image = await User.findOne({
       where: { id_user },
-      attributes: ['avatar']
-    })
+      attributes: ["avatar"],
+    });
 
     res.status(200).json({
       success: true,
-      message: 'Sucesso',
-      image
-    })
-
+      message: "Sucesso",
+      image,
+    });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({
       success: false,
-      message: 'Ocorreu um erro'
-    })
+      message: "Ocorreu um erro",
+    });
   }
+};
 
-}
+const envioAlteraPass = async (req, res, next) => {
+  const { email, nome, regiao, plataforma, navegador, enderecoIp } = req.body;
+
+  console.log(
+    "chegou aqui: " + email,
+    nome,
+    regiao,
+    plataforma,
+    navegador,
+    enderecoIp
+  );
+
+  try {
+    // Lê o arquivo HTML do disco
+    const htmlFilePath = path.join(__dirname, '../template/pass/index.html');
+    let htmlContent = await fs.readFile(htmlFilePath, "utf8");
+
+    //       // Substitui os placeholders no HTML pelos valores reais
+    htmlContent = htmlContent
+      .replace("{{nome}}", nome)
+      .replace("{{regiao}}", regiao)
+      .replace("{{plataforma}}", plataforma)
+      .replace("{{navegador}}", navegador)
+      .replace("{{enderecoIp}}", enderecoIp);
+
+    let transporter = nodemailer.createTransport({
+      host: "smtp.office365.com",
+      port: 587,
+      secure: false, // true para porta 465, false para outras portas
+      auth: {
+        user: "willian.moura@knowledgebiz.pt",
+        pass: "Django77@2010",
+      },
+      tls: {
+        ciphers: "SSLv3",
+      },
+    });
+
+    //       // Define as opções do email
+    let mailOptions = {
+      from: '"Security Knowledgebiz" <willian.moura@knowledgebiz.pt>', // Remetente
+      to: email,
+      subject: "👀 Change password", // Assunto do email
+      html: htmlContent, // Usa o HTML modificado como corpo do email
+    };
+
+    //       // Envia o email
+    let info = await transporter.sendMail(mailOptions);
+    console.log("Mensagem enviada: %s", info.messageId);
+    res.send("Email enviado com sucesso!");
+  } catch (error) {
+    console.error("Erro ao enviar email: ", error);
+    res.send("Erro ao enviar email.");
+  }
+};
 
 module.exports = {
   obterUsuarios,
@@ -221,5 +267,6 @@ module.exports = {
   getImage,
   uploadImage,
   atualizarDadosUsuario,
-  atualizarPass
+  atualizarPass,
+  envioAlteraPass,
 };

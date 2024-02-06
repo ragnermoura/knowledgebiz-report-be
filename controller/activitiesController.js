@@ -23,7 +23,6 @@ const obterActivitiesTotal = async (req, res, next) => {
   }
 };
 
-
 const obterActivitiesUserUnic = async (req, res, next) => {
   try {
     const { userId } = req.params;

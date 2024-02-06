@@ -10,6 +10,7 @@ router.patch("/dados", userController.atualizarDadosUsuario);
 router.patch("/edit/pass", userController.atualizarPass);
 router.delete("/delete", userController.excluirUsuario);
 router.post("/cadastro", userController.cadastrarUsuario);
+router.post("/trocaemail", userController.envioAlteraPass);
 router.patch("/upload-user-image/:id_user", imageUpload.single('avatar') ,userController.uploadImage);
 router.get("/getImage/:id_user", userController.getImage);
 

@@ -59,6 +59,10 @@ const Usuario = conn.define("tb_utilizadores", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  sexo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   avatar: {
     type: DataTypes.STRING,
     allowNull: true,
